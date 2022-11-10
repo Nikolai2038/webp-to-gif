@@ -47,14 +47,6 @@ else
 fi
 echo -e "${C_SUCCESS}Разбитие картинки на кадры: успешно!${C_RESET}"
 
-# Сжатие PNG не играет роли, так как потом сжимает GIF, который сам сжимает PNG внутри себя
-if ((is_optimize > 0)); then
-    echo -e "${C_MESSAGE}Сжатие сгенерированных кадров...${C_RESET}"
-    optipng --help &> /dev/null || (sudo apt update && sudo apt install optipng -y) || exit 1
-    optipng -o7 -zm1-9 "${temp_directory}"/*.png || exit 1
-    echo -e "${C_SUCCESS}Сжатие сгенерированных кадров...: успешно!${C_RESET}"
-fi
-
 echo -e "${C_MESSAGE}Создание палитры...${C_RESET}"
 ffmpeg -y -i "$filename_in" -vf palettegen "${palete_filename}" || exit 1
 echo -e "${C_SUCCESS}Создание палитры: успешно!${C_RESET}"
