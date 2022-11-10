@@ -40,8 +40,35 @@ fi
 
 echo -e "${C_MESSAGE}Разбитие картинки на кадры...${C_RESET}"
 ffmpeg --help &> /dev/null || (sudo apt update && sudo apt install ffmpeg -y) || exit 1
+# Получение видимой обралсти кадров в формате "x1 y1 x2 y2"
+crops=$(ffmpeg -i "${filename_in}" -vf cropdetect -f null - 2>&1 | awk '/crop=/' | sed -E 's/(.*)x1:([0-9]+) x2:([0-9]+) y1:([0-9]+) y2:([0-9]+)(.*)/\2 \4 \3 \5/')
+min_x=$(echo -e "${crops}" | sort -t ' ' -n -k 1 | cut -d ' ' -f 1 | head -n 1)
+min_y=$(echo -e "${crops}" | sort -t ' ' -n -k 2 | cut -d ' ' -f 2 | head -n 1)
+max_x=$(echo -e "${crops}" | sort -t ' ' -n -k 3 -r | cut -d ' ' -f 3 | head -n 1)
+max_y=$(echo -e "${crops}" | sort -t ' ' -n -k 4 -r | cut -d ' ' -f 4 | head -n 1)
+echo -e "========================================"
+echo -e "$crops"
+echo -e "========================================"
+echo -e "$crops"
+echo -e "========================================"
+echo -e "min_x=${min_x}"
+echo -e "min_y=${min_y}"
+echo -e "max_x=${max_x}"
+echo -e "max_y=${max_y}"
+echo -e "========================================"
+((width = max_x - min_x + 1))
+((height = max_y - min_y + 1))
+if ((min_x < 0 || min_y < 0 || width <= 0 || height <= 0)); then
+    echo -e "${C_ERROR}Не удалось обрезать картинку!${C_RESET}" >&2
+    exit 1
+fi
+cropvalue="crop=${width}:${height}:${min_x}:${min_y}"
+echo -e "${cropvalue}"
+echo -e "========================================"
+
 if ((is_background_alpha)); then
-    ffmpeg -y -i "$filename_in" -vf colorkey=0a0a0a:0.04 "${frame_filename}" || exit 1
+    ffmpeg -y -i "$filename_in" -vf "colorkey=0a0a0a:0.04" "${frame_filename}" || exit 1
+    # ffmpeg -y -i "$filename_in" -vf "crop=300:300:300:0,colorkey=0a0a0a:0.04" "${frame_filename}" || exit 1
 else
     ffmpeg -y -i "$filename_in" "${frame_filename}" || exit 1
 fi
@@ -52,7 +79,7 @@ ffmpeg -y -i "$filename_in" -vf palettegen "${palete_filename}" || exit 1
 echo -e "${C_SUCCESS}Создание палитры: успешно!${C_RESET}"
 
 echo -e "${C_MESSAGE}Объединение прозрачных кадров в новое изображение...${C_RESET}"
-ffmpeg -y -thread_queue_size 1024 -framerate 10 -i "${frame_filename}" -i "${palete_filename}" -lavfi paletteuse -gifflags 0 "$filename_out" || exit 1
+ffmpeg -y -thread_queue_size 1024 -framerate 12 -i "${frame_filename}" -i "${palete_filename}" -lavfi paletteuse -gifflags 0 "$filename_out" || exit 1
 echo -e "${C_SUCCESS}Объединение прозрачных кадров в новое изображение: успешно!${C_RESET}"
 
 echo -e "${C_MESSAGE}Чистка временных файлов...${C_RESET}"
