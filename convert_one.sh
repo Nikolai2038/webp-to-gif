@@ -16,7 +16,7 @@ if [[ -z "${filename_in}" ]]; then
 fi
 
 # Getting the name of the output file
-filename_out=$(basename "$filename_in" | sed -E 's/(.+)\.(.*+)/\1.gif/') || exit 1
+filename_out=$(echo "$filename_in" | sed -E 's/(.+)\.(.*+)/\1.gif/') || exit 1
 if [[ "${filename_in}" == "${filename_out}" ]]; then
     filename_out="$filename_in.gif"
 fi
