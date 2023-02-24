@@ -18,23 +18,23 @@ fi
 # Getting the name of the output file
 filename_out=$(echo "$filename_in" | sed -E 's/(.+)\.(.*+)/\1.gif/') || exit 1
 if [[ "${filename_in}" == "${filename_out}" ]]; then
-    filename_out="$filename_in.gif"
+    filename_out="${filename_in}.gif"
 fi
 
 is_transparent=${1:-1} && shift
 compression_level=${1:-1} && shift
 
-palete_filename="pallete.png"
+# Temp directory will be used to store image frames
 temp_directory="temp"
+# Pallete's filename
+palete_filename="${temp_directory}/pallete.png"
+# Frame's filename pattern
 frame_filename="${temp_directory}/%05d.png"
 
-# Temp dir will be used to store image frames
 if [ -d "${temp_directory}" ]; then
     rm -rf "${temp_directory}" || exit 1
 fi
-if [ ! -d "${temp_directory}" ]; then
-    mkdir "${temp_directory}" || exit 1
-fi
+mkdir "${temp_directory}" || exit 1
 
 echo -e "${C_MESSAGE}Splitting a picture into frames...${C_RESET}"
 ffmpeg --help &> /dev/null || (sudo apt update && sudo apt install ffmpeg -y) || exit 1
@@ -54,9 +54,6 @@ ffmpeg -y -thread_queue_size 1024 -framerate 10 -i "${frame_filename}" -i "${pal
 echo -e "${C_SUCCESS}Combining transparent frames into a new image: successful!${C_RESET}"
 
 echo -e "${C_MESSAGE}Cleaning temporary files...${C_RESET}"
-if [ -f "${palete_filename}" ]; then
-    rm "${palete_filename}" || exit 1
-fi
 if [ -d "${temp_directory}" ]; then
     rm -rf "${temp_directory}" || exit 1
 fi
