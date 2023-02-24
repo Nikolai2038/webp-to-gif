@@ -31,7 +31,7 @@ palete_filename="${temp_directory}/pallete.png"
 # Frame's filename pattern
 frame_filename="${temp_directory}/%05d.png"
 
-if [ -d "${temp_directory}" ]; then
+if [[ -d "${temp_directory}" ]]; then
     rm -rf "${temp_directory}" || exit 1
 fi
 mkdir "${temp_directory}" || exit 1
@@ -49,12 +49,20 @@ echo -e "${C_MESSAGE}Creating a palette...${C_RESET}"
 ffmpeg -y -i "$filename_in" -vf palettegen "${palete_filename}" || exit 1
 echo -e "${C_SUCCESS}Creating a palette: successful!${C_RESET}"
 
-echo -e "${C_MESSAGE}Combining transparent frames into a new image...${C_RESET}"
-ffmpeg -y -thread_queue_size 1024 -framerate 10 -i "${frame_filename}" -i "${palete_filename}" -lavfi paletteuse -gifflags 0 "$filename_out" || exit 1
-echo -e "${C_SUCCESS}Combining transparent frames into a new image: successful!${C_RESET}"
+echo -e "${C_MESSAGE}Getting the framerate...${C_RESET}"
+framerate=$(ffmpeg -i "${filename_in}" -f null /dev/null 2>&1 | grep 'Stream' | head -n 1 | sed -En 's/.*, ([0-9]+(\.[0-9]+)?) fps,.*/\1/p') || exit 1
+if [[ -z "${framerate}" ]]; then
+    echo -e "${C_ERROR}Variable ${C_TEXT_BOLD}framerate${C_ERROR} is empty!${C_RESET}"
+    exit 1
+fi
+echo -e "${C_MESSAGE}Framerate: ${C_TEXT_BOLD}${framerate}${C_MESSAGE}.${C_RESET}"
+
+echo -e "${C_MESSAGE}Combining frames into a new image...${C_RESET}"
+ffmpeg -y -thread_queue_size 1024 -framerate "${framerate}" -i "${frame_filename}" -i "${palete_filename}" -lavfi paletteuse -gifflags 0 "${filename_out}" || exit 1
+echo -e "${C_SUCCESS}Combining frames into a new image: successful!${C_RESET}"
 
 echo -e "${C_MESSAGE}Cleaning temporary files...${C_RESET}"
-if [ -d "${temp_directory}" ]; then
+if [[ -d "${temp_directory}" ]]; then
     rm -rf "${temp_directory}" || exit 1
 fi
 echo -e "${C_SUCCESS}Cleaning temporary files: successful!${C_RESET}"
@@ -63,9 +71,9 @@ if ((compression_level > 0)); then
     echo -e "${C_MESSAGE}Compression of the resulting image...${C_RESET}"
     gifsicle --help &> /dev/null || (sudo apt update && sudo apt install gifsicle -y) || exit 1
     if ((compression_level == 1)); then
-        gifsicle -O3 --colors 256 --lossy=30 -i "$filename_out" -o "$filename_out" || exit 1
+        gifsicle -O3 --colors 256 --lossy=30 -i "${filename_out}" -o "${filename_out}" || exit 1
     else
-        gifsicle -O3 --colors 64 --lossy=100 -i "$filename_out" -o "$filename_out" || exit 1
+        gifsicle -O3 --colors 64 --lossy=100 -i "${filename_out}" -o "${filename_out}" || exit 1
     fi
     echo -e "${C_SUCCESS}Compression of the resulting image: successful!${C_RESET}"
 fi
