@@ -37,7 +37,7 @@ fi
 mkdir "${temp_directory}" || exit 1
 
 echo -e "${C_MESSAGE}Splitting a picture into frames...${C_RESET}"
-ffmpeg --help &> /dev/null || (sudo apt update && sudo apt install ffmpeg -y) || exit 1
+ffmpeg --help &> /dev/null || (echo -e "${C_MESSAGE}Package ${C_TEXT_BOLD}ffmpeg${C_MESSAGE} will be installed...${C_RESET}" && sudo apt update && sudo apt install ffmpeg -y) || exit 1
 if ((is_transparent)); then
     ffmpeg -y -i "$filename_in" -vf colorkey=0a0a0a:0.04 "${frame_filename}" || exit 1
 else
@@ -69,7 +69,7 @@ echo -e "${C_SUCCESS}Cleaning temporary files: successful!${C_RESET}"
 
 if ((compression_level > 0)); then
     echo -e "${C_MESSAGE}Compression of the resulting image...${C_RESET}"
-    gifsicle --help &> /dev/null || (sudo apt update && sudo apt install gifsicle -y) || exit 1
+    gifsicle --help &> /dev/null || (echo -e "${C_MESSAGE}Package ${C_TEXT_BOLD}gifsicle${C_MESSAGE} will be installed...${C_RESET}" && sudo apt update && sudo apt install gifsicle -y) || exit 1
     if ((compression_level == 1)); then
         gifsicle -O3 --colors 256 --lossy=30 -i "${filename_out}" -o "${filename_out}" || exit 1
     else

@@ -1,5 +1,5 @@
-*
-!.gitignore
-!*.sh
-!README.md
-!LICENSE
+# You can put your files in `data` directory - they will be ignored by GIT
+/data/*
+
+# We keep example files in the GIT
+!/data/examples
