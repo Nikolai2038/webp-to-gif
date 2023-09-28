@@ -1,15 +1,22 @@
-# bash-webp-to-gif
+# Bash WEBP to GIF
+
+## Description
 
 Bash-script to convert `*.webp` or `*.webm` images to `*.gif` (with animation and transparency preserved).
 
 ## Requirements
 
-- Linux (WSL);
-- `ffmpeg` and `gifsicle` packages (they will be installed automatically, if not already installed).
+- Linux or WSL;
+- `ffmpeg` and `gifsicle` apt-packages installed. They will be installed automatically, if not already installed.
 
 ## Usage
 
-1. Clone the repository inside Linux machine or WSL.
+1. Clone the repository:
+
+    ```bash
+    git clone https://github.com/Nikolai2038/bash-webp-to-gif.git
+    cd bash-webp-to-gif
+    ```
 
 2. Run main script:
 
@@ -39,22 +46,22 @@ Bash-script to convert `*.webp` or `*.webm` images to `*.gif` (with animation an
 
     ![output gif image](data/examples/girl_transparency.gif)
 
-    Lets rename `girl.gif` to `girl_transparency.gif` (so script won't override it later)
+    Finally rename `girl.gif` to `girl_transparency.gif` so script won't override it later.
 
-3. Let's run script again with transparency disabled:
+3. Let's run script again, but with transparency disabled now:
 
     ```bash
     ./convert_one.sh ./data/examples/girl.webp 0 1
     ```
 
-    After some execution new `girl.gif` image will be generated:
+    New `girl.gif` image will be generated:
 
     ![output gif image](data/examples/girl_no_transparency.gif)
 
     As we can see, all transparency pixels are now black!
 
-    We rename result image to `girl_no_transparency.gif`.
+    Rename result image to `girl_no_transparency.gif`.
 
 ## Contribution
 
-Feel free to contribute!
+Feel free to contribute via [pull requests](https://github.com/Nikolai2038/bash-webp-to-gif/pulls) or [issues](https://github.com/Nikolai2038/bash-webp-to-gif/issues)!
