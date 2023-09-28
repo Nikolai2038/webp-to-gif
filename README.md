@@ -1,13 +1,16 @@
 # Bash WEBP to GIF
 
+**EN** | [RU](README_RU.md)
+
 ## Description
 
-Bash-script to convert `*.webp` or `*.webm` images to `*.gif` (with animation and transparency preserved).
+This script allows you to convert `*.webp` or `*.webm` images to `*.gif` (with animation and transparency preserved).
 
 ## Requirements
 
 - Linux or WSL;
-- `ffmpeg` and `gifsicle` apt-packages installed. They will be installed automatically, if not already installed.
+- Bash;
+- `ffmpeg` and `gifsicle` apt-packages installed (they will be installed automatically, if not already installed).
 
 ## Usage
 
@@ -22,20 +25,19 @@ Bash-script to convert `*.webp` or `*.webm` images to `*.gif` (with animation an
 
     - for a specific file:
 
-    ```bash
-    ./convert_one.sh <file_path> [0|1 - enable transparency, default is 1] [0|1|2 - compression level, default is 1]
-    ```
+        ```bash
+        ./convert_one.sh <file path> [0|1 - enable transparency, default is 1] [0|1|2 - compression level, default is 1]
+        ```
 
     - for all files in a specific directory:
 
-    ```bash
-    ./convert_all_in_dir.sh <directory_path> [0|1 - enable transparency, default is 1] [0|1|2 - compression level, default is 1]
-    ```
+        ```bash
+        ./convert_all_in_dir.sh <directory path> [0|1 - enable transparency, default is 1] [0|1|2 - compression level, default is 1]
+        ```
 
 ## Example
 
 1. There is example file `girl.webp` in the `./data/examples` directory.
-
 2. Let's generate `gif` with transparency enabled:
 
     ```bash
@@ -46,9 +48,8 @@ Bash-script to convert `*.webp` or `*.webm` images to `*.gif` (with animation an
 
     ![output gif image](data/examples/girl_transparency.gif)
 
-    Finally rename `girl.gif` to `girl_transparency.gif` so script won't override it later.
-
-3. Let's run script again, but with transparency disabled now:
+3. Rename `girl.gif` to `girl_transparency.gif` so script won't override it later.
+4. Let's run script again, but with transparency disabled now:
 
     ```bash
     ./convert_one.sh ./data/examples/girl.webp 0 1
@@ -60,7 +61,7 @@ Bash-script to convert `*.webp` or `*.webm` images to `*.gif` (with animation an
 
     As we can see, all transparency pixels are now black!
 
-    Rename result image to `girl_no_transparency.gif`.
+5. Rename result image to `girl_no_transparency.gif`.
 
 ## Contribution
 
