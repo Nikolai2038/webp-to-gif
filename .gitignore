@@ -3,3 +3,14 @@
 
 # We keep example files in the GIT
 !/data/examples
+# Test images for development
+!/data/not_working
+
+# JetBrains products
+.idea
+
+# VS Code
+.vscode
+
+# Temp files
+/temp
