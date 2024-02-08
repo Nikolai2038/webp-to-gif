@@ -3,8 +3,7 @@
 
 # We keep example files in the GIT
 !/data/examples
-# Test images for development
-!/data/not_working
+/data/examples/*.gif
 
 # JetBrains products
 .idea

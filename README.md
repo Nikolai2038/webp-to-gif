@@ -37,31 +37,31 @@ This script allows you to convert `*.webp` or `*.webm` images to `*.gif` (with a
 
 ## Example
 
-1. There is example file `girl.webp` in the `./data/examples` directory.
+1. There is example file `01_girl.webp` in the `./data/examples` directory.
 2. Let's generate `gif` with transparency enabled:
 
     ```bash
-    ./convert_one.sh ./data/examples/girl.webp 1 1
+    ./convert_one.sh ./data/examples/01_girl.webp 1 1
     ```
 
-    After some execution the `./data/examples/girl.gif` image will be generated:
+    After some execution the `./data/examples/01_girl.gif` image will be generated:
 
-    ![output gif image](data/examples/girl_transparency.gif)
+    ![output gif image](./.readme_images/01_girl_transparency.gif)
 
-3. Rename `girl.gif` to `girl_transparency.gif` so script won't override it later.
+3. Rename `01_girl.gif` to `01_girl_transparency.gif` so script won't override it later.
 4. Let's run script again, but with transparency disabled now:
 
     ```bash
-    ./convert_one.sh ./data/examples/girl.webp 0 1
+    ./convert_one.sh ./data/examples/01_girl.webp 0 1
     ```
 
-    New `girl.gif` image will be generated:
+    New `01_girl.gif` image will be generated:
 
-    ![output gif image](data/examples/girl_no_transparency.gif)
+    ![output gif image](./.readme_images/01_girl_no_transparency.gif)
 
     As we can see, all transparency pixels are now black!
 
-5. Rename result image to `girl_no_transparency.gif`.
+5. Rename result image to `01_girl_no_transparency.gif`.
 
 ## Contribution
 
