@@ -6,6 +6,12 @@
 
 This script allows you to convert `*.webp` or `*.webm` images to `*.gif` (with animation and transparency preserved).
 
+Solution based on:
+
+- [Solution with `anim_dump`](https://askubuntu.com/questions/1140873/how-can-i-convert-an-animated-webp-to-a-webm);
+- [About `ldconfig`](https://stackoverflow.com/questions/12045563/cannot-load-shared-library-that-exists-in-usr-local-lib-fedora-x64/12057372#12057372);
+- [Building `libwebp`](https://chromium.googlesource.com/webm/libwebp/+/HEAD/doc/building.md).
+
 ## Requirements
 
 - Linux or WSL;
