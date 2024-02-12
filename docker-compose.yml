@@ -1,0 +1,11 @@
+version: '3.7'
+
+services:
+  webp-to-gif:
+    build:
+      context: ./
+      dockerfile: ./Dockerfile
+    image: nikolai2038/webp-to-gif:1.1.0
+    container_name: webp-to-gif
+    volumes:
+      - ".:/app"

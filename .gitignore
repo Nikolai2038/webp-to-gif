@@ -3,3 +3,13 @@
 
 # We keep example files in the GIT
 !/data/examples
+/data/examples/*.gif
+
+# JetBrains products
+.idea
+
+# VS Code
+.vscode
+
+# Temp files
+/temp
