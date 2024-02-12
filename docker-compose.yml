@@ -5,7 +5,7 @@ services:
     build:
       context: ./
       dockerfile: ./Dockerfile
-    image: nikolai2038/webp-to-gif:1.1.0
+    image: nikolai2038/webp-to-gif:1.1.1
     container_name: webp-to-gif
     volumes:
       - ".:/app"

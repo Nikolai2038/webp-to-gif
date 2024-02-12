@@ -91,7 +91,7 @@ For both usages you need to:
 
 ### 3.1. Using Docker Container
 
-1. Pull image from DockerHub or build it yourself:
+1. Pull [the image](https://hub.docker.com/r/nikolai2038/webp-to-gif) from DockerHub or build it yourself:
 
     - Pull:
 
