@@ -4,18 +4,25 @@
 set -e
 
 main() {
-  local directory_with_this_script
-  directory_with_this_script="$(dirname "${BASH_SOURCE[0]}")"
+  # Getting the name of the input file
+  local filename_in="$1" && { shift || true; }
+  if [ -z "${filename_in}" ]; then
+    echo -e "${C_ERROR}Script usage: ${C_COMMAND}./script.sh <file_path> [0|1 - enable transparency] [0|1|2 - compression level]${C_RESET}" >&2
+    return 1
+  fi
 
-  docker-compose exec webp-to-gif-service bash -c '
-    mkdir --parents frames && \
-    cd frames && \
-    anim_dump ../data/examples/07_anisticker.webp && \
-    cd .. && \
-    duration="$(webpmux -info ./data/examples/07_anisticker.webp | head -n 6 | tail -n 1)" && \
-    echo $duration
-    ffmpeg -framerate 10 -i frames/dump_%04d.png ./data/examples/07_anisticker.gif
-  '
+  local is_transparent=${1:-1} && { shift || true; }
+  local compression_level=${1:-1} && { shift || true; }
+
+  docker-compose exec webp-to-gif-service bash -c "
+    /app/clear.sh &> /dev/null;
+    /app/convert_one.sh \"${filename_in}\" \"${is_transparent}\" \"${compression_level}\"
+  "
+
+#  docker-compose exec webp-to-gif-service bash -c '
+#    /app/clear.sh;
+#    /app/convert_all_in_dir.sh /app/data/examples
+#  '
 }
 
 main "$@"

@@ -3,9 +3,9 @@ version: '3.7'
 services:
   webp-to-gif-service:
     build:
-      context: ./webp-to-gif-service
+      context: ./
       dockerfile: ./Dockerfile
     image: webp-to-gif-service:latest
     container_name: webp-to-gif-service
     volumes:
-      - "./data:/app/data"
+      - ".:/app"

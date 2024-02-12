@@ -33,6 +33,9 @@ RUN make install
 # See: https://stackoverflow.com/questions/12045563/cannot-load-shared-library-that-exists-in-usr-local-lib-fedora-x64/12057372#12057372
 RUN echo "/usr/local/lib" >> /etc/ld.so.conf
 RUN ldconfig
+
+# Check installation
+RUN anim_dump -version
 # ========================================
 
 # ========================================
@@ -46,5 +49,8 @@ RUN apt-get autoremove -y && apt-get clean && rm -rf /var/lib/apt/lists/*
 # ========================================
 
 WORKDIR /app
+# Copy all scripts to the container
+COPY ./*.sh ./
+
 # To make container work in the background
 ENTRYPOINT ["tail", "-f", "/dev/null"]
