@@ -15,12 +15,13 @@ RUN apt update && apt install -y \
 
 # ========================================
 # Installation
+# (Based on: https://askubuntu.com/a/1141049)
 # ========================================
 WORKDIR /app
 RUN git clone https://chromium.googlesource.com/webm/libwebp
-RUN echo "bin_PROGRAMS += anim_dump" >> /app/libwebp/examples/Makefile.am
-
 WORKDIR /app/libwebp
+RUN echo "bin_PROGRAMS += anim_dump" >> ./examples/Makefile.am
+
 RUN ./autogen.sh
 RUN ./configure
 
@@ -36,6 +37,7 @@ RUN echo "/usr/local/lib" >> /etc/ld.so.conf
 RUN ldconfig
 
 # Check installation
+RUN webpinfo -version
 RUN anim_dump -version
 # ========================================
 

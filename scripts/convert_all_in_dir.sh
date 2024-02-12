@@ -28,10 +28,10 @@ main() {
   local filename_in
   for filename_in in "$dirname"/*; do
     local is_required_extension
-    is_required_extension="$(echo -e "$filename_in" | sed -En '/(.*).web[pm]/p')"
+    is_required_extension="$(echo -e "${filename_in}" | sed -En '/(.*).web[pm]/p')"
     if [ -n "${is_required_extension}" ]; then
     ((files_count = files_count + 1))
-      "${directory_with_this_script}/convert_one.sh" "$filename_in" "$@" || {
+      "${directory_with_this_script}/convert_one.sh" "${filename_in}" "$@" || {
         failed_files=("${failed_files[@]}" "${filename_in}")
         continue
       }

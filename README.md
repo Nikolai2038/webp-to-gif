@@ -1,68 +1,161 @@
-# Bash WEBP to GIF
+# WEBP to GIF
 
 **EN** | [RU](README_RU.md)
 
-## Description
+## 1. Description
 
-This docker-container allows you to convert `*.webp` or `*.webm` images to `*.gif` (with animation and transparency preserved).
+These scripts allows you to convert `*.webp` or `*.webm` images to `*.gif` (with animation and transparency preserved).
 
 Solution based on:
 
-- [Solution via `anim_dump`](https://askubuntu.com/questions/1140873/how-can-i-convert-an-animated-webp-to-a-webm);
+- [Solution via `anim_dump`](https://askubuntu.com/a/1141049);
 - [About `ldconfig`](https://stackoverflow.com/questions/12045563/cannot-load-shared-library-that-exists-in-usr-local-lib-fedora-x64/12057372#12057372);
 - [Building `libwebp`](https://chromium.googlesource.com/webm/libwebp/+/HEAD/doc/building.md).
 
-## Requirements
+I suggest you to use Docker container, but you can still install all required packages and execute scripts in your system too (see below).
+
+Some example files was taken from [ticket](https://trac.ffmpeg.org/ticket/4907) on `ffmpeg` (when attempt to convert `webp` images with `ANIM` and `ANMF` blocks inside them).
+
+## 2. Requirements
+
+### 2.1. Using Docker container
 
 - Docker and Docker Compose.
 
-## Usage
+### 2.2. Using raw system
+
+The Docker container was based on Debian, so instructions below will be for Debian too.
+See `./Dockerfile` for more info.
+
+1. Install required packages:
+
+    ```bash
+    sudo apt update && apt install -y \
+        gcc make autoconf automake libtool \
+        libpng-dev libjpeg-dev libgif-dev libwebp-dev libtiff-dev libsdl2-dev \
+        git \
+        ffmpeg \
+        gifsicle
+    ```
+
+2. Clone `libwebp` repository and add `anim_dump` support to build configuration:
+
+    ```bash
+    git clone https://chromium.googlesource.com/webm/libwebp && \
+    cd libwebp && \
+    echo "bin_PROGRAMS += anim_dump" >> ./examples/Makefile.am
+    ```
+
+3. Configure build files:
+
+    ```bash
+    ./autogen.sh && \
+    ./configure
+    ```
+
+4. Install:
+
+    ```bash
+    make && \
+    sudo make install && \
+    echo "/usr/local/lib" | sudo tee -a /etc/ld.so.conf && \
+    sudo ldconfig
+    ```
+
+5. Check installation:
+
+    ```bash
+    webpinfo -version && \
+    anim_dump -version
+    ```
+
+6. Remove cloned repository:
+
+    ```bash
+    cd .. && \
+    rm -rf ./libwebp
+    ```
+
+## 3. Usage
+
+For both usages you need to:
 
 1. Clone the repository:
 
     ```bash
-    git clone https://github.com/Nikolai2038/bash-webp-to-gif.git
-    cd bash-webp-to-gif
+    git clone https://github.com/Nikolai2038/webp-to-gif.git && \
+    cd webp-to-gif
     ```
 
-2. Now you can pull image from DockerHub or build it yourself:
+2. Put your `.webp` or `.webm` images inside `data` folder (you can create subfolders - all will be ignored in GIT, except `examples` directory)
 
-   - Pull:
+### 3.1. Using Docker Container
 
-      ```bash
-      docker-compose pull
-      ```
-   
-   - Build it yourself (see `./Dockerfile` on how it will be built):
-   
-      ```bash
-      docker-compose build
-      ```
+1. Pull image from DockerHub or build it yourself:
 
-3. Put your `.webp` or `.webm` images inside `data` folder (you can create subfolders - all will be ignored in GIT, except `examples` directory)
-4. Now you can start the container (the `./data` folder will be mounted):
+    - Pull:
+
+       ```bash
+       docker-compose pull
+       ```
+
+    - Build it yourself (see `./Dockerfile` on how it will be built):
+
+       ```bash
+       docker-compose build
+       ```
+
+2. Start the container in the background (the repository root folder will be mounted):
 
    ```bash
-   docker-compose up --rm
+   docker-compose up --detach
    ```
-   
-   Inside the container you can execute scripts:
-   
-   - for a specific file:
 
-       ```bash
-       ./convert_one.sh <file path> [0|1 - enable transparency, default is 1] [0|1|2 - compression level, default is 1]
-       ```
+3. Now you can execute scripts (the paths to images must be relative and be inside repository folder, since they are accessed from the container):
 
-   - for all files in a specific directory:
+    - Convert specific `webp` file to `gif`:
 
-       ```bash
-       ./convert_all_in_dir.sh <directory path> [0|1 - enable transparency, default is 1] [0|1|2 - compression level, default is 1]
-       ```
+        ```bash
+        ./convert_one.sh <file path> [0|1 - enable transparency, default is 1] [0|1|2 - compression level, default is 1]
+        ```
 
-## Example
+   - Convert all `webp` files in a specific directory to `gif`:
 
-1. There is example file `01_girl.webp` in the `./data/examples` directory.
+        ```bash
+        ./convert_all_in_dir.sh <directory path> [0|1 - enable transparency, default is 1] [0|1|2 - compression level, default is 1]
+        ```
+
+   - Convert all `webp` example files (inside `./data/examples`) to `gif`:
+
+        ```bash
+        ./test.sh [0|1 - enable transparency, default is 1] [0|1|2 - compression level, default is 1]
+        ```
+     
+   - Remove ALL `gif` files inside `./data` directory (recursively):
+
+        ```bash
+        ./clear.sh
+        ```
+
+    You can also execute raw command, but remember to use scripts inside `./scripts` directory. For example:
+    
+    ```bash
+    docker-compose exec webp-to-gif bash -c './scripts/convert_one.sh ./data/examples/01_girl.webp 0 1'
+    ```
+
+4. To stop and remove container, use:
+
+   ```bash
+   docker-compose down
+   ```
+
+### 3.2. Using raw system
+
+Just use scripts in `./scripts` directory, not in repository's root. The arguments are the same.
+
+## 4. Example
+
+1. There are several example files in the `./data/examples` directory, for example, `01_girl.webp`.
 2. Let's generate `gif` with transparency enabled:
 
     ```bash
@@ -88,6 +181,6 @@ Solution based on:
 
 5. Rename result image to `01_girl_no_transparency.gif`.
 
-## Contribution
+## 5. Contribution
 
-Feel free to contribute via [pull requests](https://github.com/Nikolai2038/bash-webp-to-gif/pulls) or [issues](https://github.com/Nikolai2038/bash-webp-to-gif/issues)!
+Feel free to contribute via [pull requests](https://github.com/Nikolai2038/webp-to-gif/pulls) or [issues](https://github.com/Nikolai2038/webp-to-gif/issues)!

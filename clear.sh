@@ -4,7 +4,7 @@
 set -e
 
 main() {
-  docker-compose exec webp-to-gif-service bash -c "/app/scripts/clear.sh ${*}"
+  docker-compose exec webp-to-gif bash -c "/app/scripts/clear.sh ${*}"
 }
 
 main "$@"

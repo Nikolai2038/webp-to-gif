@@ -4,7 +4,7 @@
 set -e
 
 main() {
-  docker-compose exec webp-to-gif-service bash -c "/app/scripts/convert_one.sh ${*}"
+  docker-compose exec webp-to-gif bash -c "/app/scripts/convert_one.sh ${*}"
 }
 
 main "$@"
