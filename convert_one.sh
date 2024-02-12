@@ -37,45 +37,38 @@ main() {
     return 1
   fi
 
-  check_command webpmux libwebpmux3
+  if [ ! -f "${filename_in}" ]; then
+    echo -e "${C_ERROR}File ${C_TEXT_BOLD}${filename_in}${C_ERROR} does not exist!${C_RESET}" >&2
+    return 1
+  fi
+
   check_command ffmpeg
   check_command gifsicle
 
-  local is_mux_supported=0
+  echo -e "${C_MESSAGE}Getting frames info...${C_RESET}" >&2
+
   local frames_info_raw
-  frames_info_raw="$(webpmux -info "${filename_in}")" && is_mux_supported=1
+  frames_info_raw="$(webpinfo "${filename_in}")"
 
-  echo -e "${C_MESSAGE}Getting frames info...${C_RESET}"
-  local duration_in_milliseconds=1000
-  local frames_count=1
-  local framerate=10
-  local loops=0
-  if ((is_mux_supported)); then
-    echo -e "${C_MESSAGE}Raw frames info:${C_RESET}"
-    echo "${frames_info_raw}" >&2
-
-    local frames_info
-    frames_info="$(echo "${frames_info_raw}" | sed -En '/^\s*[0-9]+:/p')"
-
-    frames_count="$(echo "${frames_info}" | wc -l)"
-
-    # Duration can (?) be different for each frame, so we sum it all up
-    local durations_expression
-    durations_expression="$(echo "${frames_info}" | awk '{print "+ " $7}')"
-    eval "duration_in_milliseconds=\"\$((0 + ${durations_expression}))\""
-    duration_in_milliseconds="$((duration_in_milliseconds))"
-
-    # To increase accuracy, we move 1000 from the denominator to the numerator
-    framerate="$((frames_count * 1000 / duration_in_milliseconds))"
-
-    loops="$(echo "${frames_info_raw}" | sed -En 's/^.*?Loop count: ([0-9]+)$/\1/p')"
-  else
-    echo -e "${C_ERROR}Frames info: Duration: ${C_TEXT_BOLD}${duration_in_milliseconds}ms${C_SUCCESS}.${C_RESET}" >&2
-  fi
-
+  local durations
+  durations="$(echo "${frames_info_raw}" | sed -En 's/^\s*Duration: ([0-9]+)$/\1/p')"
+  local duration_in_milliseconds=0
+  local frames_count=0
+  local duration
+  for duration in ${durations}; do
+    ((duration_in_milliseconds = duration_in_milliseconds + duration))
+    ((frames_count = frames_count + 1))
+  done
   echo -e "${C_SUCCESS}Frames info: Duration: ${C_TEXT_BOLD}${duration_in_milliseconds}ms${C_SUCCESS}.${C_RESET}" >&2
-  echo -e "${C_SUCCESS}Frames info: Frames count: ${C_TEXT_BOLD}${frames_count}${C_SUCCESS}.${C_RESET}"
+  echo -e "${C_SUCCESS}Frames info: Frames count: ${C_TEXT_BOLD}${frames_count}${C_SUCCESS}.${C_RESET}" >&2
+
+  # To increase accuracy, we move 1000 from the denominator to the numerator
+  local framerate
+  framerate="$((frames_count * 1000 / duration_in_milliseconds))"
   echo -e "${C_SUCCESS}Frames info: Framerate: ${C_TEXT_BOLD}${framerate}${C_SUCCESS}.${C_RESET}" >&2
+
+  local loops
+  loops="$(echo "${frames_info_raw}" | sed -En 's/^\s+?Loop count\s+?:\s+?([0-9]+)$/\1/p')"
   if ((loops == 0)); then
     echo -e "${C_SUCCESS}Frames info: Loops: ${C_TEXT_BOLD}infinite${C_SUCCESS}.${C_RESET}" >&2
   else
@@ -104,40 +97,39 @@ main() {
   fi
   mkdir "${temp_directory}"
 
-  echo -e "${C_MESSAGE}Splitting picture \"${filename_in}\" into frames...${C_RESET}"
+  echo -e "${C_MESSAGE}Splitting picture \"${filename_in}\" into frames...${C_RESET}" >&2
   anim_dump -folder "${temp_directory}" -prefix "" "${filename_in}"
-  echo -e "${C_SUCCESS}Splitting a picture into frames: successful!${C_RESET}"
+  echo -e "${C_SUCCESS}Splitting a picture into frames: successful!${C_RESET}" >&2
 
-  echo -e "${C_MESSAGE}Creating a palette...${C_RESET}"
+  echo -e "${C_MESSAGE}Creating a palette...${C_RESET}" >&2
   ffmpeg -y -i "${frame_filename}" -vf palettegen "${palette_filename}"
-  echo -e "${C_SUCCESS}Creating a palette: successful!${C_RESET}"
+  echo -e "${C_SUCCESS}Creating a palette: successful!${C_RESET}" >&2
 
-  echo -e "${C_MESSAGE}Combining frames into a new image...${C_RESET}"
+  echo -e "${C_MESSAGE}Combining frames into a new image...${C_RESET}" >&2
   if ((is_transparent)); then
     ffmpeg -y -thread_queue_size 1024 -framerate "${framerate}" -i "${frame_filename}" -i "${palette_filename}" -lavfi paletteuse -t "${duration_in_milliseconds}ms" "${filename_out}"
   else
     ffmpeg -y -thread_queue_size 1024 -framerate "${framerate}" -i "${frame_filename}" -t "${duration_in_milliseconds}ms" "${filename_out}"
   fi
-  # ffmpeg -i "${filename_out}" -f null - | grep frame
-  echo -e "${C_SUCCESS}Combining frames into a new image: successful!${C_RESET}"
+  echo -e "${C_SUCCESS}Combining frames into a new image: successful!${C_RESET}" >&2
 
-  echo -e "${C_MESSAGE}Cleaning temporary files...${C_RESET}"
+  echo -e "${C_MESSAGE}Cleaning temporary files...${C_RESET}" >&2
   if [ -d ${temp_directory} ]; then
     rm -rf "${temp_directory}"
   fi
-  echo -e "${C_SUCCESS}Cleaning temporary files: successful!${C_RESET}"
+  echo -e "${C_SUCCESS}Cleaning temporary files: successful!${C_RESET}" >&2
 
   if ((compression_level > 0)); then
-    echo -e "${C_MESSAGE}Compression of the resulting image...${C_RESET}"
+    echo -e "${C_MESSAGE}Compression of the resulting image...${C_RESET}" >&2
     if ((compression_level == 1)); then
       gifsicle -O3 --colors 256 --lossy=30 -i "${filename_out}" -o "${filename_out}"
     else
       gifsicle -O3 --colors 64 --lossy=100 -i "${filename_out}" -o "${filename_out}"
     fi
-    echo -e "${C_SUCCESS}Compression of the resulting image: successful!${C_RESET}"
+    echo -e "${C_SUCCESS}Compression of the resulting image: successful!${C_RESET}" >&2
   fi
 
-  echo -e "${C_SUCCESS}File ${C_TEXT_BOLD}${filename_out}${C_SUCCESS} successfully created!${C_RESET}"
+  echo -e "${C_SUCCESS}File ${C_TEXT_BOLD}${filename_out}${C_SUCCESS} successfully created!${C_RESET}" >&2
 }
 
 main "$@"

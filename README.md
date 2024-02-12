@@ -4,19 +4,17 @@
 
 ## Description
 
-This script allows you to convert `*.webp` or `*.webm` images to `*.gif` (with animation and transparency preserved).
+This docker-container allows you to convert `*.webp` or `*.webm` images to `*.gif` (with animation and transparency preserved).
 
 Solution based on:
 
-- [Solution with `anim_dump`](https://askubuntu.com/questions/1140873/how-can-i-convert-an-animated-webp-to-a-webm);
+- [Solution via `anim_dump`](https://askubuntu.com/questions/1140873/how-can-i-convert-an-animated-webp-to-a-webm);
 - [About `ldconfig`](https://stackoverflow.com/questions/12045563/cannot-load-shared-library-that-exists-in-usr-local-lib-fedora-x64/12057372#12057372);
 - [Building `libwebp`](https://chromium.googlesource.com/webm/libwebp/+/HEAD/doc/building.md).
 
 ## Requirements
 
-- Linux or WSL;
-- Bash;
-- `ffmpeg` and `gifsicle` apt-packages installed (they will be installed automatically, if not already installed).
+- Docker and Docker Compose.
 
 ## Usage
 
@@ -27,19 +25,40 @@ Solution based on:
     cd bash-webp-to-gif
     ```
 
-2. Run main script:
+2. Now you can pull image from DockerHub or build it yourself:
 
-    - for a specific file:
+   - Pull:
 
-        ```bash
-        ./convert_one.sh <file path> [0|1 - enable transparency, default is 1] [0|1|2 - compression level, default is 1]
-        ```
+      ```bash
+      docker-compose pull
+      ```
+   
+   - Build it yourself (see `./Dockerfile` on how it will be built):
+   
+      ```bash
+      docker-compose build
+      ```
 
-    - for all files in a specific directory:
+3. Put your `.webp` or `.webm` images inside `data` folder (you can create subfolders - all will be ignored in GIT, except `examples` directory)
+4. Now you can start the container (the `./data` folder will be mounted):
 
-        ```bash
-        ./convert_all_in_dir.sh <directory path> [0|1 - enable transparency, default is 1] [0|1|2 - compression level, default is 1]
-        ```
+   ```bash
+   docker-compose up --rm
+   ```
+   
+   Inside the container you can execute scripts:
+   
+   - for a specific file:
+
+       ```bash
+       ./convert_one.sh <file path> [0|1 - enable transparency, default is 1] [0|1|2 - compression level, default is 1]
+       ```
+
+   - for all files in a specific directory:
+
+       ```bash
+       ./convert_all_in_dir.sh <directory path> [0|1 - enable transparency, default is 1] [0|1|2 - compression level, default is 1]
+       ```
 
 ## Example
 

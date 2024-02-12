@@ -28,6 +28,7 @@ RUN ./configure
 RUN if grep --ignore-case 'warn' ./configure.log; then exit 1; fi
 
 RUN make
+# Installed utilities are in /usr/local/bin: anim_dump cwebp dwebp gif2webp img2webp webpinfo webpmux
 RUN make install
 
 # See: https://stackoverflow.com/questions/12045563/cannot-load-shared-library-that-exists-in-usr-local-lib-fedora-x64/12057372#12057372
