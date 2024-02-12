@@ -51,32 +51,44 @@ main() {
 
   echo -e "${C_MESSAGE}Getting frames info...${C_RESET}" >&2
 
+  local is_webp_invalid=0
+
   local frames_info_raw
-  frames_info_raw="$(webpinfo "${filename_in}")"
+  frames_info_raw="$(webpinfo "${filename_in}")" || is_webp_invalid=1
 
-  local durations
-  durations="$(echo "${frames_info_raw}" | sed -En 's/^\s*Duration: ([0-9]+)$/\1/p')"
-  local duration_in_milliseconds=0
-  local frames_count=0
-  local duration
-  for duration in ${durations}; do
-    ((duration_in_milliseconds = duration_in_milliseconds + duration))
-    ((frames_count = frames_count + 1))
-  done
-
-  # webp-image still can be not animated - in this case it has only one frame
-  if ((duration_in_milliseconds = 0 || frames_count == 0)); then
-    duration_in_milliseconds=1000
-    frames_count=1
-  fi
-
-  echo -e "${C_SUCCESS}Frames info: Duration: ${C_TEXT_BOLD}${duration_in_milliseconds}ms${C_SUCCESS}.${C_RESET}" >&2
-  echo -e "${C_SUCCESS}Frames info: Frames count: ${C_TEXT_BOLD}${frames_count}${C_SUCCESS}.${C_RESET}" >&2
-
-  # To increase accuracy, we move 1000 from the denominator to the numerator
   local framerate
-  framerate="$((frames_count * 1000 / duration_in_milliseconds))"
-  echo -e "${C_SUCCESS}Frames info: Framerate: ${C_TEXT_BOLD}${framerate}${C_SUCCESS}.${C_RESET}" >&2
+  local final_duration
+  if ((is_webp_invalid)); then
+    echo -e "${C_ERROR}Warning! This webp image has invalid format and libwebp utils (webpinfo, anim_dump, etc.) can't process it. However, if this image does not contain ANIM nor ANMF, it still can be processed by ffmpeg. Processing with ffmpeg...${C_RESET}" >&2
+
+    frames_info_raw="$(ffmpeg -i "${filename_in}" -f null /dev/null 2>&1)"
+    framerate=$(echo "${frames_info_raw}" | grep 'Stream' | head -n 1 | sed -En 's/.*, ([0-9]+(\.[0-9]+)?) fps,.*/\1/p')
+    final_duration=$(echo "${frames_info_raw}" | sed -En 's/^\s*Duration: ([0-9:.]+),.*$/\1/p')
+  else
+    local durations
+    durations="$(echo "${frames_info_raw}" | sed -En 's/^\s*Duration: ([0-9]+)$/\1/p')"
+    local duration_in_milliseconds=0
+    local frames_count=0
+    local duration
+    for duration in ${durations}; do
+      ((duration_in_milliseconds = duration_in_milliseconds + duration))
+      ((frames_count = frames_count + 1))
+    done
+
+    # webp-image still can be not animated - in this case it has only one frame
+    if ((duration_in_milliseconds == 0 || frames_count == 0)); then
+      duration_in_milliseconds=1000
+      frames_count=1
+    fi
+
+    echo -e "${C_SUCCESS}Frames info: Frames count: ${C_TEXT_BOLD}${frames_count}${C_SUCCESS}.${C_RESET}" >&2
+
+    final_duration="${duration_in_milliseconds}ms"
+    # To increase accuracy, we move 1000 from the denominator to the numerator
+    framerate="$((frames_count * 1000 / duration_in_milliseconds))"
+  fi
+  echo -e "${C_SUCCESS}Frames info: Duration: ${C_TEXT_BOLD}${duration_in_milliseconds}ms${C_SUCCESS}.${C_RESET}" >&2
+  echo -e "${C_SUCCESS}Calculated framerate: ${C_TEXT_BOLD}${framerate}${C_SUCCESS}.${C_RESET}" >&2
 
   local loops
   loops="$(echo "${frames_info_raw}" | sed -En 's/^\s+?Loop count\s+?:\s+?([0-9]+)$/\1/p')"
@@ -109,7 +121,15 @@ main() {
   mkdir "${temp_directory}"
 
   echo -e "${C_MESSAGE}Splitting picture \"${filename_in}\" into frames...${C_RESET}" >&2
-  anim_dump -folder "${temp_directory}" -prefix "" "${filename_in}"
+  if ((is_webp_invalid)); then
+    if ((is_transparent)); then
+      ffmpeg -y -i "${filename_in}" -vf colorkey=0a0a0a:0.04 "${frame_filename}" || exit 1
+    else
+      ffmpeg -y -i "${filename_in}" "${frame_filename}" || exit 1
+    fi
+  else
+    anim_dump -folder "${temp_directory}" -prefix "" "${filename_in}"
+  fi
   echo -e "${C_SUCCESS}Splitting a picture into frames: successful!${C_RESET}" >&2
 
   echo -e "${C_MESSAGE}Creating a palette...${C_RESET}" >&2
@@ -117,11 +137,11 @@ main() {
   echo -e "${C_SUCCESS}Creating a palette: successful!${C_RESET}" >&2
 
   echo -e "${C_MESSAGE}Combining frames into a new image...${C_RESET}" >&2
+  local transparent_args=()
   if ((is_transparent)); then
-    ffmpeg -y -thread_queue_size 1024 -framerate "${framerate}" -i "${frame_filename}" -i "${palette_filename}" -lavfi paletteuse -t "${duration_in_milliseconds}ms" "${filename_out}"
-  else
-    ffmpeg -y -thread_queue_size 1024 -framerate "${framerate}" -i "${frame_filename}" -t "${duration_in_milliseconds}ms" "${filename_out}"
+    transparent_args=(-i "${palette_filename}" -lavfi paletteuse)
   fi
+  ffmpeg -y -thread_queue_size 1024 -framerate "${framerate}" -i "${frame_filename}" "${transparent_args[@]}" -t "${final_duration}" "${filename_out}"
   echo -e "${C_SUCCESS}Combining frames into a new image: successful!${C_RESET}" >&2
 
   echo -e "${C_MESSAGE}Cleaning temporary files...${C_RESET}" >&2

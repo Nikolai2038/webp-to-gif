@@ -22,6 +22,7 @@ main() {
   fi
 
   local failed_files=()
+  local files_count=0
   local directory_with_this_script
   directory_with_this_script="$(dirname "${BASH_SOURCE[0]}")"
   local filename_in
@@ -29,6 +30,7 @@ main() {
     local is_required_extension
     is_required_extension="$(echo -e "$filename_in" | sed -En '/(.*).web[pm]/p')"
     if [ -n "${is_required_extension}" ]; then
+    ((files_count = files_count + 1))
       "${directory_with_this_script}/convert_one.sh" "$filename_in" "$@" || {
         failed_files=("${failed_files[@]}" "${filename_in}")
         continue
@@ -39,12 +41,12 @@ main() {
   local failed_files_count="${#failed_files[@]}"
 
   if ((failed_files_count)); then
-    echo -e "${C_ERROR}Failed files: ${C_TEXT_BOLD}${failed_files_count}${C_ERROR}:${C_RESET}" >&2
+    echo -e "${C_ERROR}Failed files: ${C_TEXT_BOLD}${failed_files_count}/${files_count}${C_ERROR}:${C_RESET}" >&2
     for filename_in in "${failed_files[@]}"; do
       echo -e "${C_ERROR}- ${C_TEXT_BOLD}${filename_in}${C_ERROR};${C_RESET}" >&2
     done
   else
-    echo -e "${C_SUCCESS}No failed files!${C_RESET}" >&2
+    echo -e "${C_SUCCESS}Failed files: ${C_TEXT_BOLD}${failed_files_count}/${files_count}${C_SUCCESS}!${C_RESET}" >&2
   fi
 
   if ((failed_files_count)); then
