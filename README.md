@@ -95,21 +95,21 @@ For both usages you need to:
 
     - Pull:
 
-       ```bash
-       docker-compose pull
-       ```
+        ```bash
+        docker-compose pull
+        ```
 
     - Build it yourself (see `./Dockerfile` on how it will be built):
 
-       ```bash
-       docker-compose build
-       ```
+        ```bash
+        docker-compose build
+        ```
 
 2. Start the container in the background (the repository root folder will be mounted):
 
-   ```bash
-   docker-compose up --detach
-   ```
+    ```bash
+    docker-compose up --detach
+    ```
 
 3. Now you can execute scripts (the paths to images must be relative and be inside repository folder, since they are accessed from the container):
 
@@ -119,35 +119,35 @@ For both usages you need to:
         ./convert_one.sh <file path> [0|1 - enable transparency, default is 1] [0|1|2 - compression level, default is 1]
         ```
 
-   - Convert all `webp` files in a specific directory to `gif`:
+    - Convert all `webp` files in a specific directory to `gif`:
 
         ```bash
         ./convert_all_in_dir.sh <directory path> [0|1 - enable transparency, default is 1] [0|1|2 - compression level, default is 1]
         ```
 
-   - Convert all `webp` example files (inside `./data/examples`) to `gif`:
+    - Convert all `webp` example files (inside `./data/examples`) to `gif`:
 
         ```bash
         ./test.sh [0|1 - enable transparency, default is 1] [0|1|2 - compression level, default is 1]
         ```
-     
-   - Remove ALL `gif` files inside `./data` directory (recursively):
+
+    - Remove ALL `gif` files inside `./data` directory (recursively):
 
         ```bash
         ./clear.sh
         ```
 
     You can also execute raw command, but remember to use scripts inside `./scripts` directory. For example:
-    
+
     ```bash
     docker-compose exec webp-to-gif bash -c './scripts/convert_one.sh ./data/examples/01_girl.webp 0 1'
     ```
 
 4. To stop and remove container, use:
 
-   ```bash
-   docker-compose down
-   ```
+    ```bash
+    docker-compose down
+    ```
 
 ### 3.2. Using raw system
 
